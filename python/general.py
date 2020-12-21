@@ -1,4 +1,8 @@
-# -*- coding: utf-8 -*-
+datefrom = "2020-01-01"
+dateto = "2020-11-01"
+goalslist = ["42705398"]
+clientLogin = 'mst-riverstart'
+
 import requests
 from requests.exceptions import ConnectionError
 from time import sleep
@@ -24,17 +28,6 @@ else:
         else:
             return x
 
-
-def getYesterday(): 
-    today=datetime.date.today() 
-    oneday=datetime.timedelta(days=1) 
-    yesterday=today-oneday  
-    return yesterday
-        
-
-date1 = str(getYesterday())
-
-
 # --- Входные данные ---
 # Адрес сервиса Reports для отправки JSON-запросов (регистрозависимый)
 ReportsURL = 'https://api.direct.yandex.com/json/v5/reports'
@@ -42,15 +35,8 @@ ReportsURL = 'https://api.direct.yandex.com/json/v5/reports'
 # OAuth-токен пользователя, от имени которого будут выполняться запросы
 # Перейдите по ссылке https://oauth.yandex.ru/authorize?response_type=token&client_id=ИДЕНТИФИКАТОР_ПРИЛОЖЕНИЯ
 token = 'AgAAAAAQtOqsAAXFJmgblCV-9Ea2rV7KzxWbH8M'
-
-# Логин клиента рекламного агентства
-# Обязательный параметр, если запросы выполняются от имени рекламного агентства
-clientLogin = 'mst-riverstart'
-
 some_number = random.randrange(1, 99999999999999, 1)
 report_name = str(clientLogin) + str(some_number)
-
-
 # --- Подготовка запроса ---
 # Создание HTTP-заголовков запроса
 headers = {
@@ -63,7 +49,7 @@ headers = {
            # Режим формирования отчета
            "processingMode": "auto",
            # Формат денежных значений в отчете
-           # "returnMoneyInMicros": "false",
+           "returnMoneyInMicros": "false",
            # Не выводить в отчете строку с названием отчета и диапазоном дат
            "skipReportHeader": "true",
            # Не выводить в отчете строку с названиями полей
@@ -76,10 +62,10 @@ headers = {
 body = {
     "params": {
         "SelectionCriteria": {
-            "DateFrom": "2020-11-01",
-            "DateTo": date1
+            "DateFrom": datefrom,
+            "DateTo": dateto
         },
-        "Goals": ["42705398"],
+        "Goals": goalslist,
         "FieldNames": [
             "Date",
             "AdNetworkType",
@@ -97,7 +83,8 @@ body = {
         "DateRangeType": "CUSTOM_DATE",
         "Format": "TSV",
         "IncludeVAT": "YES",
-        "IncludeDiscount": "NO"
+        "IncludeDiscount": "NO",
+        "AttributionModels": ["LYDC"]
     }
 }
 
@@ -166,11 +153,8 @@ while True:
         print("Произошла непредвиденная ошибка")
         # Принудительный выход из цикла
         break
-data = req.json()
-print(data)
 
-
-#если ничего не выйдет, то
-# urlData = req.text
-# df = pd.DataFrame(io.StringIO(urlData))
-# new_df = df[0].str.split('\t', expand=True)
+data = req.text
+urlData = req.text
+df = pd.DataFrame(io.StringIO(urlData))
+new_df = df[0].str.split('\t', expand=True)
